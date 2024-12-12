@@ -1,0 +1,184 @@
+#pgzero
+import random
+
+WIDTH = 1060
+HEIGHT = 500
+
+TITLE = "Ghost survival UHR (Version 1.0)"
+FPS = 60
+
+def enemyWalk(enemy):
+    global speed
+    if enemy.klaw == 1:
+        if enemy.y > house_autumn.y:
+            enemy.y -= speed
+        
+        if enemy.y < house_autumn.y:
+            enemy.y += speed
+        
+        if enemy.x > house_autumn.x:
+            enemy.x -= speed
+        
+        if enemy.x < house_autumn.x:
+            enemy.x += speed
+    if enemy.klaw == 2:    
+        if enemy.y > house_autumn_2.y:
+            enemy.y -= speed
+        
+        if enemy.y < house_autumn_2.y:
+            enemy.y += speed
+        
+        if enemy.x > house_autumn_2.x:
+            enemy.x -= speed
+        
+        if enemy.x < house_autumn_2.x:
+            enemy.x += speed
+def enemySpawn(enemy): #Появление монстров (мне так кажется)
+    global wave
+    global speed
+    # global enemy
+    enemyspawn = random.randint(1, 4)
+    if level != 1:
+        enemy.klaw = random.randint(1, 2)
+    if enemyspawn == 1:
+        enemy.x = random.randint(-100, 1000)
+        enemy.y = 600
+    elif enemyspawn == 2:
+        enemy.x = random.randint(-100, 1000)
+        enemy.y = -100
+    elif enemyspawn == 3:
+        enemy.y = random.randint(0, 500)
+        enemy.x = -100
+    elif enemyspawn == 4:
+        enemy.y = random.randint(0, 500)
+        enemy.x = 1160
+    wave += 1
+    speed += 0.1
+        
+def takeDamage(enemy):
+    global health_timer
+    global health_timer_2
+    if enemy.colliderect(house_autumn):
+        health_timer += 1
+    if health_timer >= 30:
+        house_autumn.health -= 5
+        health_timer = 0
+    if enemy.colliderect(house_autumn_2):
+        health_timer_2 += 1
+    if health_timer_2 >= 30:
+        house_autumn_2.health -= 5
+        health_timer_2 = 0
+
+player = Actor("player", pos=(100,240), size=(75, 75))
+enemy1 = Actor("enemy1", size=(75, 75))
+enemy2 = Actor("bat", size=(75, 75))
+enemy3 = Actor("enemy1", size=(75, 75))
+enemy4 = Actor("bat", size=(75, 75))
+enemy5 = Actor("enemy1", size=(75, 75))
+enemy6 = Actor("bat", size=(75, 75))
+enemy1.klaw = 1
+enemy2.klaw = 1
+enemy3.klaw = 1
+enemy4.klaw = 1
+enemy5.klaw = 1
+enemy6.klaw = 1
+
+
+autumn_map = Actor("autumn_map")
+house_autumn = Actor("house_autumn", center=(520,250))
+house_autumn_2 = Actor("house_autumn", center = (520, 250))
+bar = Actor("bar", pos=(150, 50), size=(285, 50))
+
+
+black = Actor("black-screen", center=(524,250))
+
+health_timer = 0
+health_timer_2 = 0
+speed = 3 #Скорость игрока (мне так кажется)
+
+wave = 0 #Кол-во поверженных призраков
+
+house_autumn.health = 100 #Здоровье дома
+house_autumn_2.health = 100
+
+level = 1
+def draw():
+    autumn_map.draw()
+    house_autumn.draw()
+    house_autumn_2.draw()
+    enemy1.draw()
+    if wave >= 5: 
+        enemy2.draw()
+    if wave >= 30:
+        enemy3.draw()
+        enemy4.draw()
+    if wave >= 100:
+        enemy5.draw()
+        enemy6.draw()
+    player.draw()
+    
+    bar.draw()
+    screen.draw.text('Здоровье первого дома: ' + str(house_autumn.health), pos=(25,25), color="white", fontsize=20)
+    screen.draw.text('Повержено призраков: ' + str(wave), pos=(25,50), color="white", fontsize=20)
+    if wave >= 30:
+        screen.draw.text('Здоровье второго дома: ' + str(house_autumn_2.health), pos=(50,90), color="white", fontsize=20)
+    
+    if house_autumn.health <= 0 or house_autumn_2.health <= 0:#Поражение
+        black.draw()
+        screen.draw.text('Один из ваших домов разрушен!', pos=(170, 200), color="white", fontsize=50)
+        screen.draw.text('Вы проиграли!', pos=(420, 250), color="white", fontsize=30)
+        
+   
+   
+def update(dt): #Управление
+    global level
+    if keyboard.d and player.x < 1030:
+        player.x += 5
+    if keyboard.a and player.x > 30:
+        player.x -= 5
+        
+    if keyboard.w and player.y > 30:
+        player.y -= 5
+        player.image = "player-back"
+        
+    if keyboard.s and player.y < 470:
+        player.y += 5
+        player.image = "player"
+        
+    if player.colliderect(enemy1):
+        enemySpawn(enemy1)
+    if player.colliderect(enemy2) and wave >= 5:
+        enemySpawn(enemy2)
+    if player.colliderect(enemy3) and wave >= 30:
+        enemySpawn(enemy3)
+    if player.colliderect(enemy4) and wave >= 30:
+        enemySpawn(enemy4)
+    if player.colliderect(enemy5) and wave >= 100:
+        enemySpawn(enemy5)
+    if player.colliderect(enemy6) and wave >= 100:
+        enemySpawn(enemy6)
+        
+    if wave >= 30:
+        level = 2
+        house_autumn.pos = (520, 250)
+        house_autumn_2.pos = (350, 250)
+    if wave >= 100:
+        level = 3
+        
+    takeDamage(enemy1)
+    takeDamage(enemy2)
+    takeDamage(enemy3)
+    takeDamage(enemy4)
+    takeDamage(enemy5)
+    takeDamage(enemy6)
+    
+    enemyWalk(enemy1) #Волна монстров
+    if wave >= 5: 
+        enemyWalk(enemy2)
+    if wave >= 30:
+        enemyWalk(enemy3)
+        enemyWalk(enemy4)
+    if wave >= 100:
+        enemyWalk(enemy5)
+        enemyWalk(enemy6)
+    
